@@ -5,7 +5,7 @@
 ![Chatbot User Interface](screenshots/chatbot_response.png)
 
 ## Team Members
-- **Amrita Shahi** ([@amrita_shahi](https://github.com/amrita_shahi))  
+- **Amrita Shahi** ([@amritashahi](https://github.com/amritashahi))  
 - **Pranil Parajuli** ([@praniil](https://github.com/praniil))  
 - **Raj Simkhada** ([@RAJ-Git18](https://github.com/RAJ-Git18))  
 - **Sugam Dahal** ([@sugam24](https://github.com/sugam24))  
