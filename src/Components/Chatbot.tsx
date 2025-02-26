@@ -1,33 +1,42 @@
 import React, { useState, useRef } from "react";
-import { FaUserCircle, FaStar } from "react-icons/fa";
-import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
+import { FaUserCircle, FaStar } from "react-icons/fa"; // Icons for UI elements
+import axios from "axios"; // For HTTP requests
+import { useLocation, useNavigate } from "react-router-dom"; // Routing hooks
 
+/**
+ * Chatbot Component
+ * Handles user interactions, displays conversation, and manages feedback/rating modals.
+ */
 const Chatbot: React.FC = () => {
-  const iconSize = 32;
+  const iconSize = 32; // Icon size
   const [conversation, setConversation] = useState<
     { sender: string; text: string }[]
-  >([]);
-  const [isTyping, setIsTyping] = useState<boolean>(false);
-  const [modal, setModal] = useState<"feedback" | "rating" | null>(null);
-  const [rating, setRating] = useState<number>(0);
-  const [feedback, setFeedback] = useState<string>("");
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState<boolean>(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  >([]); // Chat messages
+  const [isTyping, setIsTyping] = useState<boolean>(false); // Typing indicator
+  const [modal, setModal] = useState<"feedback" | "rating" | null>(null); // Modal visibility
+  const [rating, setRating] = useState<number>(0); // User rating
+  const [feedback, setFeedback] = useState<string>(""); // User feedback
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState<boolean>(false); // Profile menu toggle
+  const location = useLocation(); // Access navigation state
+  const navigate = useNavigate(); // Redirect users
 
-  const user_id = (location.state as { user_id?: string } | null)?.user_id;
+  // Extract user info from location state
+  const user_id = (location.state as { user_id?: string })?.user_id;
   const user_name =
-    (location.state as { user_name?: string } | null)?.user_name || "User";
+    (location.state as { user_name?: string })?.user_name || "User";
 
-  const questions: string[] = [
+  // Predefined quick questions
+  const questions = [
     "I'm feeling very sleepy day by day. What can I do?",
     "How can I establish a consistent sleep schedule?",
     "I'm feeling down and don't see the point in anything. Does therapy help?",
   ];
 
-  const userInput = useRef<HTMLInputElement | null>(null);
+  const userInput = useRef<HTMLInputElement | null>(null); // Reference to input field
 
+  /**
+   * Sends user input to the backend and updates conversation with bot response.
+   */
   const handleSend = async (): Promise<void> => {
     if (userInput.current?.value) {
       const userInputText = userInput.current.value;
@@ -35,14 +44,16 @@ const Chatbot: React.FC = () => {
         ...prev,
         { sender: "user", text: userInputText },
       ]);
-      userInput.current.value = "";
-      setIsTyping(true);
+      userInput.current.value = ""; // Clear input field
+      setIsTyping(true); // Show typing indicator
 
       try {
         const response = await axios.post<{ chatbot_response: string }>(
           "http://127.0.0.1:5000/post_userinput",
           { input: userInputText, user_id }
         );
+
+        // Simulate typing delay before showing bot response
         setTimeout(() => {
           setConversation((prev) => [
             ...prev,
@@ -57,6 +68,9 @@ const Chatbot: React.FC = () => {
     }
   };
 
+  /**
+   * Submits user feedback to the backend.
+   */
   const handleFeedbackSubmit = async (): Promise<void> => {
     if (!feedback.trim())
       return alert("Please enter feedback before submitting.");
@@ -67,16 +81,19 @@ const Chatbot: React.FC = () => {
         user_id,
       });
       alert("Thank you for your feedback!");
-      setFeedback("");
-      setModal(null);
+      setFeedback(""); // Reset feedback field
+      setModal(null); // Close modal
     } catch (error) {
       console.error("Feedback submission error:", error);
     }
   };
 
+  /**
+   * Submits a star rating to the backend.
+   */
   const handleRatingSubmit = async (rate: number): Promise<void> => {
-    setRating(rate);
-    setModal(null);
+    setRating(rate); // Update rating UI
+    setModal(null); // Close modal
 
     try {
       await axios.post("http://127.0.0.1:5000/submit_rating", {
@@ -89,22 +106,28 @@ const Chatbot: React.FC = () => {
     }
   };
 
-  const handleProfileClick = (): void => {
-    setIsProfileMenuOpen((prev) => !prev); // Toggle dropdown
-  };
+  /**
+   * Toggles the profile menu visibility.
+   */
+  const handleProfileClick = (): void => setIsProfileMenuOpen((prev) => !prev);
 
+  /**
+   * Logs the user out and redirects to the homepage.
+   */
   const handleLogout = (): void => {
-    setConversation([]); // Reset chat history
-    setIsProfileMenuOpen(false);
-    navigate("/"); // Redirect to initial page
+    setConversation([]); // Clear chat history
+    setIsProfileMenuOpen(false); // Close menu
+    navigate("/"); // Redirect home
   };
 
-  const handleCloseMenu = (): void => {
-    setIsProfileMenuOpen(false); // Just close the dropdown
-  };
+  /**
+   * Closes the profile menu.
+   */
+  const handleCloseMenu = (): void => setIsProfileMenuOpen(false);
 
   return (
     <div className="bg-gray-200 h-screen p-4 flex gap-2 w-full">
+      {/* Sidebar: Quick questions, feedback, and rating buttons */}
       <div className="w-1/4 bg-gray-400 rounded-md p-4 flex flex-col">
         <h2 className="text-2xl font-semibold mb-4">Frequent Questions</h2>
         <div className="space-y-2">
@@ -128,13 +151,15 @@ const Chatbot: React.FC = () => {
         </button>
         <button
           onClick={() => setModal("rating")}
-          className="mt-2 p-2 justify-center bg-gray-300 rounded flex items-center gap-2"
+          className="mt-2 p-2 flex justify-center items-center gap-2 bg-gray-300 rounded"
         >
           <FaStar /> Rate Us
         </button>
       </div>
 
+      {/* Chat Area: Displays conversation, profile menu, and input field */}
       <div className="w-3/4 bg-gray-300 rounded-md p-4 flex flex-col relative">
+        {/* Profile Menu */}
         <div className="flex justify-end">
           <button onClick={handleProfileClick} className="focus:outline-none">
             <FaUserCircle
@@ -146,19 +171,21 @@ const Chatbot: React.FC = () => {
             <div className="absolute top-10 right-0 bg-white shadow-lg rounded-md p-2 w-40 z-10">
               <button
                 onClick={handleCloseMenu}
-                className="w-full text-left p-2 hover:bg-gray-100 rounded flex items-center justify-between"
+                className="w-full text-left p-2 hover:bg-gray-100 rounded"
               >
                 Close <span className="text-gray-500">✕</span>
               </button>
               <button
                 onClick={handleLogout}
-                className="w-full text-left p-2 hover:bg-gray-100 rounded text-red-600"
+                className="w-full text-left p-2 hover:bg-gray-100 text-red-600 rounded"
               >
                 Logout
               </button>
             </div>
           )}
         </div>
+
+        {/* Conversation Display */}
         <div className="flex-grow space-y-4 overflow-y-auto p-4">
           <div className="p-2 bg-gray-50 rounded-md w-1/2">
             Hi {user_name}! How can I help you?
@@ -179,6 +206,8 @@ const Chatbot: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Input Field */}
         <div className="flex items-center mt-4">
           <input
             ref={userInput}
@@ -194,6 +223,7 @@ const Chatbot: React.FC = () => {
         </div>
       </div>
 
+      {/* Feedback Modal */}
       {modal === "feedback" && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-4 rounded-md text-center w-96">
@@ -222,9 +252,11 @@ const Chatbot: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Rating Modal */}
       {modal === "rating" && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-4 rounded-md text-center max-w-sm w-full">
+          <div className="bg-white p-4 rounded-md text-center w-full max-w-sm">
             <h2 className="text-lg font-semibold mb-2">Rate Us</h2>
             <div className="flex justify-center space-x-2 mb-4">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -251,4 +283,4 @@ const Chatbot: React.FC = () => {
   );
 };
 
-export default Chatbot;
+export default Chatbot; // Export the Chatbot component
