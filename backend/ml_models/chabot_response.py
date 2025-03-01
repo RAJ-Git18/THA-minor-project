@@ -11,29 +11,26 @@ def get_model_response(user_input):
     text_generator = pipeline("text-generation", model=model_name, tokenizer=tokenizer)
 
     while True:
-        # user_input = input("You: ") 
         if user_input.lower() in ["exit", "quit"]:
             print("Bot: Goodbye!")
             break
 
-        inputs = tokenizer(user_input, return_tensors='pt', padding=True, truncation=True)
-
-        attention_mask = inputs['attention_mask']
-
         response = text_generator(
             user_input,
-            max_length=200,
+            max_length=400,
             num_return_sequences=1,
             do_sample=True,
             temperature=0.7,
+            pad_token_id=tokenizer.eos_token_id,
             truncation=False,
         )
 
-        suggestion = response[0]['generated_text']
-        suggestion = suggestion[len(user_input):].strip()
-        for i, char in enumerate(suggestion):
-            if char == ".":
-                final_suggestion = suggestion[i+1:].strip()
-                break
-        print(f"Bot: {final_suggestion}")
-        return final_suggestion
+        generated_text = response[0]["generated_text"]
+
+        if generated_text.startswith(user_input):
+            suggestion = generated_text[len(user_input) :].strip()
+        else:
+            suggestion = generated_text.strip()
+
+        print(f"Bot: {suggestion}")
+        return suggestion

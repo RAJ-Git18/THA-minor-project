@@ -166,13 +166,13 @@ def post_userinput():
             print("The table is created successfully!! ")
 
         # inserting the values
-        cursor.execute(
-            """ 
-            INSERT INTO interactionlog(user_input, llm_response, user_id)
-                       VALUES(%s,%s,%s)
-        """,
-            (user_input, chabot_response, user_id),
-        )
+        # cursor.execute(
+        #     """ 
+        #     INSERT INTO interactionlog(user_input, llm_response, user_id)
+        #                VALUES(%s,%s,%s)
+        # """,
+        #     (user_input, chabot_response, user_id),
+        # )
 
         # commit the changes
         connection.commit()
